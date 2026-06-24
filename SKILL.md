@@ -1,6 +1,16 @@
 ---
 name: refactor
-description: "Perform AST-aware TypeScript refactors using ts-morph, preserving each import's original style (path alias or relative). Renames directories and module files anywhere in the tree and rewrites all importers across the project, including test-runner mock paths. Records each applied refactor so the change can later be rebased onto a moved-on main and verified. Runs in dry-run by default and shows a diff before applying. Triggers: 'rename directory', 'rename module', 'rename folder', 'move module', 'rename across files', 'update imports', 'refactor rebase', 'refactor verify', 'rebase onto refactored main', 'verify refactor', or needs AST-aware TypeScript source transformation."
+description:
+  "Perform AST-aware TypeScript refactors using ts-morph, preserving each
+  import's original style (path alias or relative). Renames directories and
+  module files anywhere in the tree and rewrites all importers across the
+  project, including test-runner mock paths. Records each applied refactor so
+  the change can later be rebased onto a moved-on main and verified. Runs in
+  dry-run by default and shows a diff before applying. Triggers: 'rename
+  directory', 'rename module', 'rename folder', 'move module', 'rename across
+  files', 'update imports', 'refactor rebase', 'refactor verify', 'rebase onto
+  refactored main', 'verify refactor', or needs AST-aware TypeScript source
+  transformation."
 allowed-tools: Bash, Read, Edit, Write, Grep, Glob, AskUserQuestion
 ---
 
@@ -15,8 +25,8 @@ rewrites callers precisely — safer than regex for source transformation.
 Route on the request:
 
 - **Refactor** (default) — rename a directory or module and rewrite importers.
-  Any rename/move request lands here. After applying, record the refactor
-  unless the user opted out. See [records.md](records.md).
+  Any rename/move request lands here. After applying, record the refactor unless
+  the user opted out. See [records.md](records.md).
 - **Rebase** — `refactor rebase`. Strategy for landing a branch on a main that
   has since absorbed other refactors. See [rebase.md](rebase.md).
 - **Verify** — `refactor verify`. Confirm a conflict resolution did not
@@ -83,11 +93,11 @@ Never apply without first showing the `--diff` output.
 
 Detect these from the user's natural language:
 
-| Behaviour | Cues                                                          | Default | Effect                                                |
-| --------- | ------------------------------------------------------------ | ------- | ----------------------------------------------------- |
-| Auto      | "just do it", "go ahead", "no need to confirm", "auto"       | Off     | Run `--diff`, then apply without pausing for approval  |
-| Dry-run   | "just show me", "preview", "dry run", "don't actually..."     | On      | Run with `--diff` only and stop                       |
-| No record | "no record", "don't record", "skip the record", "without a record" | Off | Apply the refactor but skip authoring the record       |
+| Behaviour | Cues                                                               | Default | Effect                                                |
+| --------- | ------------------------------------------------------------------ | ------- | ----------------------------------------------------- |
+| Auto      | "just do it", "go ahead", "no need to confirm", "auto"             | Off     | Run `--diff`, then apply without pausing for approval |
+| Dry-run   | "just show me", "preview", "dry run", "don't actually..."          | On      | Run with `--diff` only and stop                       |
+| No record | "no record", "don't record", "skip the record", "without a record" | Off     | Apply the refactor but skip authoring the record      |
 
 Dry-run is on by default. Applying changes always requires either explicit user
 confirmation after the diff, or the Auto behaviour. Recording is on by default;
@@ -95,8 +105,8 @@ No record suppresses only the record, not the refactor.
 
 ## When to use ts-morph vs direct edits
 
-Use a script when the refactor touches imports or symbols across multiple files —
-ts-morph resolves references and rewrites all callers. Use the edit tool or a
+Use a script when the refactor touches imports or symbols across multiple files
+— ts-morph resolves references and rewrites all callers. Use the edit tool or a
 grep-driven change when the edit is localized (≤3 files, confirm with grep) or
 non-TypeScript.
 
@@ -105,8 +115,8 @@ non-TypeScript.
 Each script has a companion `.md` file with the exact workflow. **Read the
 companion doc before running a script.**
 
-| Script          | What it does                                          | Doc                                |
-| --------------- | ----------------------------------------------------- | ---------------------------------- |
+| Script          | What it does                                                                                            | Doc                                |
+| --------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------- |
 | `rename-module` | Rename a directory or module file in place, rewriting all importers and preserving alias/relative style | [renameModule.md](renameModule.md) |
 
 ## Custom refactoring scripts
@@ -128,6 +138,6 @@ script.
 ## Keywords
 
 ts-morph, refactor, typescript, AST, rename directory, rename module, rename
-folder, path alias, import rewrite, module specifier, dry-run,
-diff, cross-file rename, refactor record, rebase, verify, conflict resolution,
-merge base, stale reference
+folder, path alias, import rewrite, module specifier, dry-run, diff, cross-file
+rename, refactor record, rebase, verify, conflict resolution, merge base, stale
+reference

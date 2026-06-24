@@ -55,13 +55,19 @@ export const readExactAliasTargets = ({
     if (alias.endsWith('/*')) continue
     const target = candidates[0]
     if (target === undefined || target.endsWith('/*')) continue
-    targets.push({ alias, targetPath: path.resolve(projectRoot, baseUrl, target) })
+    targets.push({
+      alias,
+      targetPath: path.resolve(projectRoot, baseUrl, target),
+    })
   }
   return targets
 }
 
 export const isRelativeSpecifier = (value: string): boolean =>
-  value === '.' || value === '..' || value.startsWith('./') || value.startsWith('../')
+  value === '.' ||
+  value === '..' ||
+  value.startsWith('./') ||
+  value.startsWith('../')
 
 // Strip the module extension and a trailing `/index` so a specifier-resolved
 // path and a source file path compare equal regardless of how either spells the
@@ -96,7 +102,10 @@ export const aliasMappingForSpecifier = ({
   value: string
   aliasMappings: AliasMapping[]
 }): AliasMapping | undefined =>
-  aliasMappings.find((mapping) => value === mapping.prefix.slice(0, -1) || value.startsWith(mapping.prefix))
+  aliasMappings.find(
+    (mapping) =>
+      value === mapping.prefix.slice(0, -1) || value.startsWith(mapping.prefix)
+  )
 
 // The alias mapping to use when converting a relative import to absolute. With
 // an explicit prefix, match it; otherwise pick the most specific alias that
@@ -111,10 +120,15 @@ export const selectAbsoluteMapping = ({
   targetFilePath: string
 }): AliasMapping | undefined => {
   const containing = aliasMappings.filter(
-    (mapping) => targetFilePath === mapping.baseDir || targetFilePath.startsWith(`${mapping.baseDir}${path.sep}`),
+    (mapping) =>
+      targetFilePath === mapping.baseDir ||
+      targetFilePath.startsWith(`${mapping.baseDir}${path.sep}`)
   )
   if (prefix !== undefined) {
-    return containing.find((mapping) => mapping.prefix === prefix || mapping.prefix.slice(0, -1) === prefix)
+    return containing.find(
+      (mapping) =>
+        mapping.prefix === prefix || mapping.prefix.slice(0, -1) === prefix
+    )
   }
   return [...containing].sort((a, b) => b.baseDir.length - a.baseDir.length)[0]
 }
@@ -129,7 +143,10 @@ export const toAliasSpecifier = ({
   targetFilePath: string
 }): string => {
   const base = targetFilePath.replace(MODULE_EXTENSION, '')
-  let rel = toPosix(path.relative(mapping.baseDir, base)).replace(/\/index$/, '')
+  let rel = toPosix(path.relative(mapping.baseDir, base)).replace(
+    /\/index$/,
+    ''
+  )
   if (rel === 'index') rel = ''
   return rel === '' ? mapping.prefix.slice(0, -1) : mapping.prefix + rel
 }
@@ -145,7 +162,10 @@ export const resolveAliasOrPath = ({
 }): string => {
   const mapping = aliasMappingForSpecifier({ value, aliasMappings })
   if (mapping) {
-    const rest = value === mapping.prefix.slice(0, -1) ? '' : value.slice(mapping.prefix.length)
+    const rest =
+      value === mapping.prefix.slice(0, -1)
+        ? ''
+        : value.slice(mapping.prefix.length)
     return path.resolve(mapping.baseDir, rest)
   }
   return path.resolve(projectRoot, value)

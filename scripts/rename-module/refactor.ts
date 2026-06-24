@@ -16,12 +16,11 @@ import {
 import { findMockModuleLiterals } from './mockCalls.ts'
 
 const setupArgs = (yargs: BaseArgv) =>
-  yargs
-    .usage('$0 <source> <newName>')
-    .option('absoluteImports', {
-      type: 'string',
-      describe: 'Rewrite touched relative imports to an alias (optional prefix, e.g. @/)',
-    })
+  yargs.usage('$0 <source> <newName>').option('absoluteImports', {
+    type: 'string',
+    describe:
+      'Rewrite touched relative imports to an alias (optional prefix, e.g. @/)',
+  })
 
 type Options = ReturnType<typeof setupArgs> extends Argv<infer O> ? O : never
 
@@ -46,7 +45,13 @@ const refactor = async (ctx: RefactorContext<Options>): Promise<void> => {
     baseUrl: compilerOptions.baseUrl ?? '.',
   })
 
-  const sourcePath = toPosix(resolveAliasOrPath({ value: source, projectRoot: ctx.projectRoot, aliasMappings }))
+  const sourcePath = toPosix(
+    resolveAliasOrPath({
+      value: source,
+      projectRoot: ctx.projectRoot,
+      aliasMappings,
+    })
+  )
   const directory = ctx.project.getDirectory(sourcePath)
   const sourceFile = ctx.project.getSourceFile(sourcePath)
   if (!directory && !sourceFile) {
@@ -67,18 +72,23 @@ const refactor = async (ctx: RefactorContext<Options>): Promise<void> => {
     projectRoot: ctx.tsConfigDir,
     baseUrl: compilerOptions.baseUrl ?? '.',
   })
-  const movedNormalizedPaths = new Set(movedFiles.map((file) => stripModuleExtension(file.getFilePath())))
+  const movedNormalizedPaths = new Set(
+    movedFiles.map((file) => stripModuleExtension(file.getFilePath()))
+  )
   const blockedAliases = exactAliasTargets.filter((alias) =>
-    movedNormalizedPaths.has(stripModuleExtension(alias.targetPath)),
+    movedNormalizedPaths.has(stripModuleExtension(alias.targetPath))
   )
   if (blockedAliases.length > 0) {
     const lines = blockedAliases
-      .map((alias) => `  ${alias.alias} -> ${path.relative(ctx.projectRoot, alias.targetPath)}`)
+      .map(
+        (alias) =>
+          `  ${alias.alias} -> ${path.relative(ctx.projectRoot, alias.targetPath)}`
+      )
       .join('\n')
     throw new Error(
       `Refusing to rename: these files are referenced through exact tsconfig path aliases ` +
         `whose targets this refactor cannot rewrite:\n${lines}\n` +
-        `Update the tsconfig "paths" entry by hand, or remove the exact alias.`,
+        `Update the tsconfig "paths" entry by hand, or remove the exact alias.`
     )
   }
 
@@ -88,7 +98,11 @@ const refactor = async (ctx: RefactorContext<Options>): Promise<void> => {
   const captured: Captured[] = []
   for (const movedFile of movedFiles) {
     for (const literal of movedFile.getReferencingLiteralsInOtherSourceFiles()) {
-      captured.push({ literal, target: movedFile, oldText: literal.getLiteralText() })
+      captured.push({
+        literal,
+        target: movedFile,
+        oldText: literal.getLiteralText(),
+      })
     }
   }
 
@@ -98,7 +112,10 @@ const refactor = async (ctx: RefactorContext<Options>): Promise<void> => {
   // capture it for the same alias/relative rewrite the imports receive.
   const movedByNormalizedPath = new Map<string, SourceFile>()
   for (const movedFile of movedFiles) {
-    movedByNormalizedPath.set(stripModuleExtension(movedFile.getFilePath()), movedFile)
+    movedByNormalizedPath.set(
+      stripModuleExtension(movedFile.getFilePath()),
+      movedFile
+    )
   }
 
   const capturedMocks: Captured[] = []
@@ -111,7 +128,7 @@ const refactor = async (ctx: RefactorContext<Options>): Promise<void> => {
           containingFilePath: file.getFilePath(),
           projectRoot: ctx.projectRoot,
           aliasMappings,
-        }),
+        })
       )
       const target = movedByNormalizedPath.get(resolved)
       if (target) capturedMocks.push({ literal, target, oldText: specifier })
@@ -122,7 +139,9 @@ const refactor = async (ctx: RefactorContext<Options>): Promise<void> => {
     ? path.join(path.dirname(sourcePath), newName)
     : path.join(path.dirname(sourcePath), newName + path.extname(sourcePath))
 
-  console.log(`Renaming ${path.relative(ctx.projectRoot, sourcePath)} -> ${newName}`)
+  console.log(
+    `Renaming ${path.relative(ctx.projectRoot, sourcePath)} -> ${newName}`
+  )
 
   if (directory) {
     directory.move(newPath)
@@ -134,7 +153,10 @@ const refactor = async (ctx: RefactorContext<Options>): Promise<void> => {
   const absoluteImports =
     absoluteImportsValue === undefined
       ? undefined
-      : { prefix: absoluteImportsValue === '' ? undefined : absoluteImportsValue }
+      : {
+          prefix:
+            absoluteImportsValue === '' ? undefined : absoluteImportsValue,
+        }
 
   for (const { literal, target, oldText } of captured) {
     if (literal.wasForgotten()) continue
@@ -142,13 +164,20 @@ const refactor = async (ctx: RefactorContext<Options>): Promise<void> => {
 
     if (!isRelativeSpecifier(oldText)) {
       // ts-morph left this alias stale — rebuild it in the same alias family.
-      const mapping = aliasMappingForSpecifier({ value: oldText, aliasMappings })
+      const mapping = aliasMappingForSpecifier({
+        value: oldText,
+        aliasMappings,
+      })
       if (mapping) {
         literal.setLiteralValue(toAliasSpecifier({ mapping, targetFilePath }))
       }
     } else if (absoluteImports && literal.getLiteralText() !== oldText) {
       // ts-morph rewrote this relative import; convert the touched ones to alias.
-      const mapping = selectAbsoluteMapping({ aliasMappings, prefix: absoluteImports.prefix, targetFilePath })
+      const mapping = selectAbsoluteMapping({
+        aliasMappings,
+        prefix: absoluteImports.prefix,
+        targetFilePath,
+      })
       if (mapping) {
         literal.setLiteralValue(toAliasSpecifier({ mapping, targetFilePath }))
       }
@@ -164,18 +193,28 @@ const refactor = async (ctx: RefactorContext<Options>): Promise<void> => {
 
     let newValue: string | undefined
     if (!isRelativeSpecifier(oldText)) {
-      const mapping = aliasMappingForSpecifier({ value: oldText, aliasMappings })
+      const mapping = aliasMappingForSpecifier({
+        value: oldText,
+        aliasMappings,
+      })
       if (mapping) newValue = toAliasSpecifier({ mapping, targetFilePath })
     } else if (absoluteImports) {
-      const mapping = selectAbsoluteMapping({ aliasMappings, prefix: absoluteImports.prefix, targetFilePath })
+      const mapping = selectAbsoluteMapping({
+        aliasMappings,
+        prefix: absoluteImports.prefix,
+        targetFilePath,
+      })
       newValue = mapping
         ? toAliasSpecifier({ mapping, targetFilePath })
         : literal.getSourceFile().getRelativePathAsModuleSpecifierTo(target)
     } else {
-      newValue = literal.getSourceFile().getRelativePathAsModuleSpecifierTo(target)
+      newValue = literal
+        .getSourceFile()
+        .getRelativePathAsModuleSpecifierTo(target)
     }
 
-    if (newValue !== undefined && newValue !== oldText) literal.setLiteralValue(newValue)
+    if (newValue !== undefined && newValue !== oldText)
+      literal.setLiteralValue(newValue)
   }
 }
 

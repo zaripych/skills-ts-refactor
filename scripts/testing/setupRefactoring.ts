@@ -29,14 +29,21 @@ export const setupRefactoring = async <O extends BaseOptions>({
   refactor: Refactor<O>
 }) => {
   const projectPath = await fs.mkdtemp(path.join(os.tmpdir(), 'ts-refactor-'))
-  await fs.cp(path.resolve(importMetaDirname, fixturePath), projectPath, { recursive: true })
+  await fs.cp(path.resolve(importMetaDirname, fixturePath), projectPath, {
+    recursive: true,
+  })
 
   return {
     projectPath,
     run: ({ args, diff }: { args: string[]; diff: boolean }): Promise<void> =>
       run({
         refactor,
-        argv: ['--project-root', projectPath, ...(diff ? ['--diff'] : []), ...args],
+        argv: [
+          '--project-root',
+          projectPath,
+          ...(diff ? ['--diff'] : []),
+          ...args,
+        ],
       }),
     readFile: ({ relativePath }: { relativePath: string }): Promise<string> =>
       fs.readFile(path.join(projectPath, relativePath), 'utf8'),

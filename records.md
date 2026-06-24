@@ -2,8 +2,8 @@
 
 A refactor record is a terse, machine-facing note about one applied refactor. It
 exists so the change can later be rebased onto a main that moved on, and so a
-conflict resolution can be checked for reintroduced artifacts. It is **not** a PR
-description or a commit message. Keep every section short.
+conflict resolution can be checked for reintroduced artifacts. It is **not** a
+PR description or a commit message. Keep every section short.
 
 ## Where records live
 
@@ -62,7 +62,7 @@ Script runs:
 2. ...
 
 Out of scope: <what the user explicitly excluded, e.g. "renamed only under
-src/lib/**, left src/legacy as-is">. Omit when obvious from the parameters.
+src/lib/\*\*, left src/legacy as-is">. Omit when obvious from the parameters.
 
 ## Manual edits
 
@@ -71,10 +71,7 @@ src/lib/**, left src/legacy as-is">. Omit when obvious from the parameters.
 
 ## Verification
 
-\`\`\`sh
-grep -rqF "<old/path>" src && exit 1 || true
-test -d <new/path>
-\`\`\`
+\`\`\`sh grep -rqF "<old/path>" src && exit 1 || true test -d <new/path> \`\`\`
 ```
 
 ### Scope

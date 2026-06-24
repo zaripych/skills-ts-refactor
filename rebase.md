@@ -24,6 +24,7 @@ base can diverge or fail.
    ```
 
    `<upstream>` is the branch being rebased onto (e.g. `origin/main`).
+
 3. **Verify** immediately with `refactor verify` (see [verify.md](verify.md)) to
    confirm the resolution did not reintroduce renamed-away artifacts. Run it
    right after the rebase, while `ORIG_HEAD` still points at the pre-rebase tip.

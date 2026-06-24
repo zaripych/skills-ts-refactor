@@ -1,8 +1,8 @@
 # refactor verify
 
 Run after a rebase conflict resolution to confirm no renamed-away artifacts were
-reintroduced. It runs the Verification section of each record that landed on main
-during the rebase.
+reintroduced. It runs the Verification section of each record that landed on
+main during the rebase.
 
 ## Select the records
 
@@ -19,8 +19,8 @@ git log --reverse --diff-filter=A --name-only --format= \
 `<upstream>` is the branch that was rebased onto (e.g. `origin/main`). The
 `--reverse` ordering replays records in merge order.
 
-If `ORIG_HEAD` is missing or stale (any rebase/merge/reset since), or the diff is
-empty, fall back to asking the user which records to run via AskUserQuestion:
+If `ORIG_HEAD` is missing or stale (any rebase/merge/reset since), or the diff
+is empty, fall back to asking the user which records to run via AskUserQuestion:
 
 ```yaml
 header: 'Verify'

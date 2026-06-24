@@ -15,13 +15,18 @@ const MOCK_METHODS = new Set([
 
 // The first string-literal argument of every `jest.mock` / `vi.mock` /
 // `vitest.mock` style call (and its siblings) in the file.
-export const findMockModuleLiterals = (sourceFile: SourceFile): StringLiteral[] => {
+export const findMockModuleLiterals = (
+  sourceFile: SourceFile
+): StringLiteral[] => {
   const literals: StringLiteral[] = []
-  for (const call of sourceFile.getDescendantsOfKind(SyntaxKind.CallExpression)) {
+  for (const call of sourceFile.getDescendantsOfKind(
+    SyntaxKind.CallExpression
+  )) {
     const expression = call.getExpression()
     if (!Node.isPropertyAccessExpression(expression)) continue
     const object = expression.getExpression()
-    if (!Node.isIdentifier(object) || !MOCK_OBJECTS.has(object.getText())) continue
+    if (!Node.isIdentifier(object) || !MOCK_OBJECTS.has(object.getText()))
+      continue
     if (!MOCK_METHODS.has(expression.getName())) continue
     const [firstArg] = call.getArguments()
     if (firstArg && Node.isStringLiteral(firstArg)) literals.push(firstArg)

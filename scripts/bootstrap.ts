@@ -85,7 +85,11 @@ export class RefactorContext<O extends BaseOptions> {
 
 const gitRepoRoot = async (cwd: string): Promise<string | undefined> => {
   try {
-    const { stdout } = await execFileAsync('git', ['rev-parse', '--show-toplevel'], { cwd })
+    const { stdout } = await execFileAsync(
+      'git',
+      ['rev-parse', '--show-toplevel'],
+      { cwd }
+    )
     return stdout.trim()
   } catch {
     return undefined
@@ -97,7 +101,10 @@ const gitTreeHash = async (cwd: string): Promise<string | undefined> => {
   // a throwaway index, so the real index is never touched. Unlike `git stash
   // create`, this returns a value for a clean tree too, so the dry-run guard
   // still runs when the repo has no pending changes.
-  const indexFile = path.join(os.tmpdir(), `ts-refactor-index-${process.pid}-${Date.now()}`)
+  const indexFile = path.join(
+    os.tmpdir(),
+    `ts-refactor-index-${process.pid}-${Date.now()}`
+  )
   const env = { ...process.env, GIT_INDEX_FILE: indexFile }
   try {
     await execFileAsync('git', ['add', '-A'], { cwd, env })
@@ -110,7 +117,9 @@ const gitTreeHash = async (cwd: string): Promise<string | undefined> => {
   }
 }
 
-export const resolveProjectRoot = async (projectRoot: string | undefined): Promise<string> => {
+export const resolveProjectRoot = async (
+  projectRoot: string | undefined
+): Promise<string> => {
   if (projectRoot !== undefined) return path.resolve(projectRoot)
   const detected = await gitRepoRoot(process.cwd())
   if (detected === undefined) {
@@ -153,32 +162,61 @@ const computeChanges = async ({
     if (originalPaths.has(filePath)) {
       const original = await fileSystem.readFile(filePath)
       if (original !== updated) {
-        changes.push({ kind: 'modified', oldPath: undefined, path: filePath, original, updated })
+        changes.push({
+          kind: 'modified',
+          oldPath: undefined,
+          path: filePath,
+          original,
+          updated,
+        })
       }
     } else {
       added.push({ path: filePath, updated })
     }
   }
 
-  const removed = [...originalPaths].filter((filePath) => !currentPaths.has(filePath))
+  const removed = [...originalPaths].filter(
+    (filePath) => !currentPaths.has(filePath)
+  )
 
   for (const entry of added) {
-    const matchIndex = removed.findIndex((r) => path.basename(r) === path.basename(entry.path))
+    const matchIndex = removed.findIndex(
+      (r) => path.basename(r) === path.basename(entry.path)
+    )
     const onlyMatch =
       matchIndex !== -1 &&
-      removed.filter((r) => path.basename(r) === path.basename(entry.path)).length === 1
+      removed.filter((r) => path.basename(r) === path.basename(entry.path))
+        .length === 1
     if (onlyMatch) {
       const [oldPath] = removed.splice(matchIndex, 1)
       const original = await fileSystem.readFile(oldPath)
-      changes.push({ kind: 'renamed', oldPath, path: entry.path, original, updated: entry.updated })
+      changes.push({
+        kind: 'renamed',
+        oldPath,
+        path: entry.path,
+        original,
+        updated: entry.updated,
+      })
     } else {
-      changes.push({ kind: 'added', oldPath: undefined, path: entry.path, original: '', updated: entry.updated })
+      changes.push({
+        kind: 'added',
+        oldPath: undefined,
+        path: entry.path,
+        original: '',
+        updated: entry.updated,
+      })
     }
   }
 
   for (const oldPath of removed) {
     const original = await fileSystem.readFile(oldPath)
-    changes.push({ kind: 'removed', oldPath: undefined, path: oldPath, original, updated: '' })
+    changes.push({
+      kind: 'removed',
+      oldPath: undefined,
+      path: oldPath,
+      original,
+      updated: '',
+    })
   }
 
   return changes.sort((a, b) => a.path.localeCompare(b.path))
@@ -191,10 +229,21 @@ const BOLD = process.env.NO_COLOR ? '' : '\u001b[1m'
 const DIM = process.env.NO_COLOR ? '' : '\u001b[2m'
 const RESET = process.env.NO_COLOR ? '' : '\u001b[0m'
 
-const relativeLabel = ({ projectRoot, filePath }: { projectRoot: string; filePath: string }): string =>
-  path.relative(projectRoot, filePath) || filePath
+const relativeLabel = ({
+  projectRoot,
+  filePath,
+}: {
+  projectRoot: string
+  filePath: string
+}): string => path.relative(projectRoot, filePath) || filePath
 
-const changeLabel = ({ projectRoot, change }: { projectRoot: string; change: FileChange }): string => {
+const changeLabel = ({
+  projectRoot,
+  change,
+}: {
+  projectRoot: string
+  change: FileChange
+}): string => {
   const target = relativeLabel({ projectRoot, filePath: change.path })
   if (change.kind === 'renamed' && change.oldPath) {
     return `${relativeLabel({ projectRoot, filePath: change.oldPath })} -> ${target}`
@@ -212,8 +261,10 @@ const formatDiff = (change: FileChange): string => {
     const oldLine = oldLines[i]
     const newLine = newLines[i]
     if (oldLine === newLine) continue
-    if (oldLine !== undefined) out.push(`${DIM}${i + 1}${RESET} ${RED}- ${oldLine}${RESET}`)
-    if (newLine !== undefined) out.push(`${DIM}${i + 1}${RESET} ${GREEN}+ ${newLine}${RESET}`)
+    if (oldLine !== undefined)
+      out.push(`${DIM}${i + 1}${RESET} ${RED}- ${oldLine}${RESET}`)
+    if (newLine !== undefined)
+      out.push(`${DIM}${i + 1}${RESET} ${GREEN}+ ${newLine}${RESET}`)
   }
   return out.join('\n')
 }
@@ -227,7 +278,11 @@ const printChanges = ({
   changes: FileChange[]
   applied: boolean
 }): void => {
-  console.log(applied ? `Applied ${changes.length} change(s):` : `Would apply ${changes.length} change(s):`)
+  console.log(
+    applied
+      ? `Applied ${changes.length} change(s):`
+      : `Would apply ${changes.length} change(s):`
+  )
   for (const change of changes) {
     const label = changeLabel({ projectRoot, change })
     console.log(`${CYAN}${label}${RESET}`)
@@ -244,7 +299,10 @@ export const run = async <O extends BaseOptions>({
   refactor: Refactor<O>
   argv?: string[]
 }): Promise<void> => {
-  const args = parseArgs({ argv: argv ?? process.argv.slice(2), setupArgs: refactor.setupArgs })
+  const args = parseArgs({
+    argv: argv ?? process.argv.slice(2),
+    setupArgs: refactor.setupArgs,
+  })
   const projectRoot = await resolveProjectRoot(args.projectRoot)
   const tsConfigPath = path.join(projectRoot, 'tsconfig.json')
   const project = new Project({ tsConfigFilePath: tsConfigPath })
@@ -258,7 +316,9 @@ export const run = async <O extends BaseOptions>({
 
   if (refactor.description) console.log(refactor.description)
 
-  const originalPaths = new Set(project.getSourceFiles().map((sf) => sf.getFilePath()))
+  const originalPaths = new Set(
+    project.getSourceFiles().map((sf) => sf.getFilePath())
+  )
 
   const gitRoot = await gitRepoRoot(projectRoot)
   const snapshot = gitRoot ? await gitTreeHash(gitRoot) : undefined
@@ -274,8 +334,14 @@ export const run = async <O extends BaseOptions>({
 
   if (args.diff) {
     printChanges({ projectRoot, changes, applied: false })
-    if (gitRoot && snapshot !== undefined && (await gitTreeHash(gitRoot)) !== snapshot) {
-      console.error('ERROR: working tree changed during dry-run. This is a bug.')
+    if (
+      gitRoot &&
+      snapshot !== undefined &&
+      (await gitTreeHash(gitRoot)) !== snapshot
+    ) {
+      console.error(
+        'ERROR: working tree changed during dry-run. This is a bug.'
+      )
     }
     console.log('\nTo apply, re-run without --diff.')
   } else {

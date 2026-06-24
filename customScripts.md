@@ -5,11 +5,11 @@ provides project setup from `tsconfig.json`, `--diff` dry-run mode, git safety
 verification, diff display, and the `RefactorContext`.
 
 ts-morph is the single source of truth for the refactored state. A refactor
-mutates ts-morph nodes directly — set module specifiers, call `sourceFile.move()`
-or `directory.move()`. The bootstrap holds no parallel edit model: it derives the
-diff by comparing ts-morph's in-memory state against the filesystem, and writes
-everything through `project.save()`. A refactor never touches the filesystem
-directly.
+mutates ts-morph nodes directly — set module specifiers, call
+`sourceFile.move()` or `directory.move()`. The bootstrap holds no parallel edit
+model: it derives the diff by comparing ts-morph's in-memory state against the
+filesystem, and writes everything through `project.save()`. A refactor never
+touches the filesystem directly.
 
 Each refactor lives in its own `scripts/<name>/` directory with three files:
 `specifiers.ts` (helpers), `refactor.ts` (the `Refactor` bundle), and `index.ts`
@@ -28,7 +28,10 @@ import type { Argv } from 'yargs'
 import { type BaseArgv, type Refactor, RefactorContext } from '../bootstrap.ts'
 
 const setupArgs = (yargs: BaseArgv) =>
-  yargs.option('myFlag', { type: 'string', describe: 'A refactor-specific option' })
+  yargs.option('myFlag', {
+    type: 'string',
+    describe: 'A refactor-specific option',
+  })
 
 type Options = ReturnType<typeof setupArgs> extends Argv<infer O> ? O : never
 
@@ -50,8 +53,9 @@ export const myRefactor: Refactor<Options> = {
 ```
 
 Camel-case option names are still accepted in their hyphenated form on the CLI
-(`--my-flag` maps to `myFlag`). An option declared `type: 'string'` with no value
-on the command line parses to `''`, which lets a flag carry an optional value.
+(`--my-flag` maps to `myFlag`). An option declared `type: 'string'` with no
+value on the command line parses to `''`, which lets a flag carry an optional
+value.
 
 ## index.ts
 
@@ -75,12 +79,12 @@ Positional arguments are read from `ctx.positionals`.
 
 ## RefactorContext API
 
-| Member                                          | Purpose                                                                                  |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `ctx.project`                                   | The ts-morph `Project`, loaded from the target `tsconfig.json`                            |
-| `ctx.args`                                      | Parsed args: `projectRoot`, `diff`, plus the refactor's own options                      |
-| `ctx.positionals`                               | Positional arguments as `string[]`                                                       |
-| `ctx.projectRoot` / `ctx.tsConfigDir`           | Resolved absolute paths                                                                   |
+| Member                                | Purpose                                                             |
+| ------------------------------------- | ------------------------------------------------------------------- |
+| `ctx.project`                         | The ts-morph `Project`, loaded from the target `tsconfig.json`      |
+| `ctx.args`                            | Parsed args: `projectRoot`, `diff`, plus the refactor's own options |
+| `ctx.positionals`                     | Positional arguments as `string[]`                                  |
+| `ctx.projectRoot` / `ctx.tsConfigDir` | Resolved absolute paths                                             |
 
 ## Preserving import style
 
@@ -100,9 +104,9 @@ reference consumer.
 ## How changes are applied
 
 The refactor mutates ts-morph only. `run()` then derives the diff by comparing
-ts-morph's in-memory source files against the filesystem (read through ts-morph's
-filesystem host, which still holds the pre-refactor content because nothing has
-been saved):
+ts-morph's in-memory source files against the filesystem (read through
+ts-morph's filesystem host, which still holds the pre-refactor content because
+nothing has been saved):
 
 - **Dry-run (`--diff`)**: compute the diff, print it, verify the git tree is
   unchanged, exit. `project.save()` is never called.
@@ -115,10 +119,10 @@ dry-run and the diff.
 ## Testing
 
 Add a fixture project under the refactor's own `fixtures/` directory and a
-vitest spec (`refactor.test.ts`) beside it. The `setupRefactoring` harness copies
-a fixture into a temp directory with `await using` auto-cleanup and binds the
-refactor bundle. Pass `import.meta.dirname` so the harness resolves the fixture
-relative to the test. The harness exposes a `run` that supplies
+vitest spec (`refactor.test.ts`) beside it. The `setupRefactoring` harness
+copies a fixture into a temp directory with `await using` auto-cleanup and binds
+the refactor bundle. Pass `import.meta.dirname` so the harness resolves the
+fixture relative to the test. The harness exposes a `run` that supplies
 `--project-root`, the `diff` flag, and your positional `args`:
 
 ```ts

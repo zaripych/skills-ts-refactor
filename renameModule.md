@@ -45,9 +45,8 @@ TSX="$SKILL_DIR/scripts/node_modules/.bin/tsx"
 
 ## Arguments
 
-- `source` — directory or module file to rename. Accepts a project-relative
-  path (`src/core/widgets`), an absolute path, or a path-alias
-  (`@/core/widgets`).
+- `source` — directory or module file to rename. Accepts a project-relative path
+  (`src/core/widgets`), an absolute path, or a path-alias (`@/core/widgets`).
 - `new-name` — the new last segment. For a file, omit the extension; the
   original extension is kept.
 - `--project-root` — project root (default: git repository root of the current
@@ -66,9 +65,9 @@ TSX="$SKILL_DIR/scripts/node_modules/.bin/tsx"
   parent directory.
 - Alias resolution reads the `paths` and `baseUrl` from the project's
   `tsconfig.json`.
-- Wildcard aliases (`@/*`) are rewritten automatically. An exact alias that
-  maps to a single file (`"@parser": ["./src/lib/parser.ts"]`) cannot be: the
-  rename invalidates the tsconfig target itself, which this refactor does not
-  edit. When a renamed file is referenced through such an alias the run aborts
-  and lists the affected entries. Update the tsconfig `paths` entry by hand, or
+- Wildcard aliases (`@/*`) are rewritten automatically. An exact alias that maps
+  to a single file (`"@parser": ["./src/lib/parser.ts"]`) cannot be: the rename
+  invalidates the tsconfig target itself, which this refactor does not edit.
+  When a renamed file is referenced through such an alias the run aborts and
+  lists the affected entries. Update the tsconfig `paths` entry by hand, or
   remove the exact alias, then re-run.
